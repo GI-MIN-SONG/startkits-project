@@ -1,5 +1,6 @@
 import { InfoIcon } from "lucide-react";
 
+import { ToastExample } from "@/components/examples/toast-example";
 import { Container } from "@/components/layout/container";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -206,6 +207,12 @@ export default function ExamplesPage() {
             </SheetHeader>
           </SheetContent>
         </Sheet>
+      </ExampleSection>
+
+      <Separator />
+
+      <ExampleSection title="Toast">
+        <ToastExample />
       </ExampleSection>
     </Container>
   );
