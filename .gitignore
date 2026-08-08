@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# claude code (local-only MCP config)
+.mcp.json
+
+# playwright mcp (local debugging artifacts)
+.playwright-mcp/
