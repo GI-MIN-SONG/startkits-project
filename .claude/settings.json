@@ -1,15 +1,39 @@
 {
-    "hooks": {
-      "Notification": [
-        {
-            "matcher": "",
-            "hooks": [
-              {
-                "type": "command",
-                "command": "osascript -e 'display notification \"Claude가 기다리는 중\" with title \"Claude Code\"'"
-              }
-            ]
-        }
-      ]
-    }
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "permission_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "osascript -e 'display notification \"Claude가 권한을 기다리는 중\" with title \"Claude Code\"'"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/notify-slack.sh\" permission"
+          }
+        ]
+      },
+      {
+        "matcher": "idle_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "osascript -e 'display notification \"Claude가 기다리는 중\" with title \"Claude Code\"'"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/notify-slack.sh\" stop"
+          }
+        ]
+      }
+    ]
   }
+}
