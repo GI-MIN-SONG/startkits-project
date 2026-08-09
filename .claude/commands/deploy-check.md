@@ -6,7 +6,6 @@ allowed-tools:
     "Bash(npm run format:check:*)",
     "Bash(npx tsc:*)",
     "Bash(npm run build:*)",
-    "Bash(git status:*)",
   ]
 ---
 
@@ -23,13 +22,13 @@ allowed-tools:
 ## 프로세스
 
 아래 4개 검사를 순서대로 실행한다. 각 단계가 끝날 때마다 성공/실패를
-확인하고, 실패 시 로그와 원인을 보여준 뒤 다음 단계를 계속 진행할지
-사용자에게 확인한다.
+확인하고, 실패 시 로그와 원인을 보여준다. 이후 진행 여부는 검사 종류에
+따라 다르게 처리한다.
 
-1. `npm run lint` — ESLint 검사
-2. `npm run format:check` — Prettier 포맷 검사
-3. `npx tsc --noEmit` — 타입 체크
-4. `npm run build` — 프로덕션 빌드
+1. `npm run lint` — ESLint 검사 (실패 시 다음 단계를 계속 진행할지 사용자에게 확인)
+2. `npm run format:check` — Prettier 포맷 검사 (실패 시 다음 단계를 계속 진행할지 사용자에게 확인)
+3. `npx tsc --noEmit` — 타입 체크 (실패 시 이후 단계를 자동으로 중단)
+4. `npm run build` — 프로덕션 빌드 (실패 시 자동으로 중단)
 
 ## 결과 리포트 포맷
 
