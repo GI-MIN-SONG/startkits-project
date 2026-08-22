@@ -1,4 +1,10 @@
-import { BadgeCheckIcon } from "lucide-react";
+import {
+  ArrowRightIcon,
+  FileCheck2Icon,
+  NotepadTextIcon,
+  PrinterIcon,
+} from "lucide-react";
+import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,30 +17,56 @@ import {
 
 export default function Home() {
   return (
-    <section className="flex flex-col items-center gap-10 px-4 py-24 text-center sm:px-6 lg:px-8">
-      <Badge variant="secondary">
-        <BadgeCheckIcon className="size-3.5" />
-        모던 웹 스타터킷
-      </Badge>
-      <h1 className="max-w-2xl text-4xl font-semibold tracking-tight sm:text-5xl">
-        Next.js와 shadcn/ui로 시작하는 프로젝트
-      </h1>
-      <p className="max-w-xl text-muted-foreground">
-        레이아웃, 다크모드, 재사용 가능한 UI 컴포넌트가 준비되어 있습니다.
-      </p>
-      <div className="flex gap-3">
-        <Button>시작하기</Button>
-        <Button variant="outline">문서 보기</Button>
-      </div>
-      <Card className="w-full max-w-md text-left">
-        <CardHeader>
-          <CardTitle>바로 사용 가능한 컴포넌트</CardTitle>
-          <CardDescription>
-            src/components/ui 아래 원자 컴포넌트를 조합해 새 화면을 빠르게 만들
-            수 있습니다.
-          </CardDescription>
-        </CardHeader>
-      </Card>
-    </section>
+    <>
+      <section className="mx-auto flex max-w-5xl flex-col items-center px-4 py-24 text-center sm:py-32">
+        <Badge variant="secondary">
+          <FileCheck2Icon className="size-3.5" />
+          Notion-powered quotes
+        </Badge>
+        <h1 className="mt-7 max-w-3xl text-4xl font-semibold tracking-tight sm:text-6xl">
+          견적서는 노션에서 작성하고,
+          <br className="hidden sm:block" /> 링크 하나로 공유하세요.
+        </h1>
+        <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
+          클라이언트는 로그인이나 별도 프로그램 없이 견적 내용을 확인하고 PDF로
+          저장할 수 있습니다.
+        </p>
+        <Button size="lg" className="mt-9" render={<Link href="/quote/demo" />}>
+          샘플 견적서 보기
+          <ArrowRightIcon data-icon="inline-end" />
+        </Button>
+      </section>
+      <section className="border-y border-border bg-muted/40">
+        <div className="mx-auto grid max-w-5xl gap-5 px-4 py-16 md:grid-cols-3">
+          {[
+            [
+              NotepadTextIcon,
+              "노션에서 관리",
+              "익숙한 노션에서 견적 내용을 작성하고 수정합니다.",
+            ],
+            [
+              ArrowRightIcon,
+              "링크로 바로 공유",
+              "파일을 다시 만들 필요 없이 웹 링크 하나만 전달합니다.",
+            ],
+            [
+              PrinterIcon,
+              "깔끔한 PDF 저장",
+              "브라우저 인쇄 기능으로 언제든 PDF를 저장합니다.",
+            ],
+          ].map(([Icon, title, description]) => (
+            <Card key={String(title)}>
+              <CardHeader>
+                <Icon className="mb-3 size-6" />
+                <CardTitle>{String(title)}</CardTitle>
+                <CardDescription className="leading-6">
+                  {String(description)}
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          ))}
+        </div>
+      </section>
+    </>
   );
 }
