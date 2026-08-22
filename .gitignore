@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -46,3 +47,9 @@ next-env.d.ts
 
 # playwright mcp (local debugging artifacts)
 .playwright-mcp/
+
+# cursor (local-only MCP config with machine-specific absolute paths)
+.cursor/
+
+# shrimp-task-manager (local task data, nested git repo)
+shrimp_data/
