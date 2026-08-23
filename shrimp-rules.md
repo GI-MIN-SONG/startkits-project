@@ -30,7 +30,7 @@
 - `항목`(라인 아이템)은 `invoices`의 `"항목"` relation으로 연결된 `items` DB를 `databases.query`(`filter: { property: "invoices", relation: { contains: <견적서페이지ID> } }`)로 조회해 가져온다. `has_more`/`next_cursor` 기반 페이지네이션으로 전량 수집해야 하며, Rich Text JSON 파싱 방식으로 되돌리지 않는다.
 - Notion API 호출에는 항상 `next: { revalidate: 300 }`(5분 재검증)을 유지한다(items 조회처럼 POST 요청인 경우 `cache: "force-cache"`를 함께 명시해야 opt-in 캐싱된다). Next.js 16 캐싱은 opt-in이므로, 캐시 옵션을 제거하거나 무조건 `no-store`로 바꾸지 않는다. 캐시 전략을 바꿔야 하면 `node_modules/next/dist/docs/`의 16.x 캐싱 문서를 먼저 확인한다.
 - `NOTION_API_KEY`, `NOTION_DATABASE_ID`는 서버 전용 환경변수다. `NEXT_PUBLIC_` 접두사를 붙이거나 클라이언트 컴포넌트/브라우저로 노출하는 코드를 작성하지 않는다. 새 환경변수를 추가하면 `.env.example`에도 주석과 함께 추가한다.
-- `fetchNotionQuote`가 실패 시 `null`을 반환하는 경우(존재하지 않음/미승인)와 `throw`하는 경우(5xx 등 upstream 오류)를 구분하고 있다. 이 구분을 유지해 `page.tsx`의 `notFound()` 흐름과 `error.tsx`의 오류 경계 흐름이 각각 올바르게 걸리도록 한다.
+- `fetchNotionQuote`는 `throw`하지 않고 `QuoteResult<Quote>`(`src/lib/quotes/errors.ts`)를 반환한다. 실패는 `not_found`/`not_published`/`invalid_data`/`upstream_unavailable`/`rate_limited` 5종으로 분류된다. `src/lib/quotes/index.ts`의 `getQuote()`가 이를 기존 `Quote | null` 계약으로 언랩하는 어댑터 역할을 하므로, `page.tsx`의 `notFound()` 흐름은 그대로 유지된다. 세분화된 오류 코드를 라우트가 직접 분기하는 것은 단계 3 범위이며, 이번 단계에서 `page.tsx`/`error.tsx`를 임의로 바꾸지 않는다.
 
 ## 견적서 라우트/URL 규칙
 
@@ -45,7 +45,7 @@
 ## 금액/날짜 표시 규칙
 
 - 통화 포맷은 `src/components/quote/quote-document.tsx`의 `Intl.NumberFormat("ko-KR", { style: "currency", currency: "KRW", maximumFractionDigits: 0 })`로 고정되어 있다. 다중 통화 지원은 `ROADMAP.md` D-11(MVP는 KRW만, 확정)에서 다루므로 별도 지시 없이 통화 포맷을 확장하지 않는다.
-- 합계는 Notion의 `"총 금액"` 필드(invoices, 발행자 입력값)를 신뢰하지 않고 `quoteTotal()`(`src/lib/quotes/types.ts`)이 라인 아이템에서 직접 계산한다(`ROADMAP.md` D-05 미정, 서버 검산 도입 전까지 이 방식 유지). `"총 금액"`을 그대로 읽어와 표시하는 방식으로 바꾸거나, 이 둘을 비교 검산하는 로직을 임의로 추가하지 않는다(별도 지시 필요).
+- 화면에 표시하는 합계는 Notion의 `"총 금액"` 필드(invoices, 발행자 입력값)를 그대로 쓰지 않고 `quoteTotal()`(`src/lib/quotes/types.ts`, 내부적으로 `amount.ts`의 `calculateQuoteTotal()`)이 라인 아이템에서 직접 계산한다. `src/lib/quotes/notion.ts`는 `"총 금액"`과 라인 합산을 `reconcileQuoteTotal()`로 비교해 불일치 시 `Quote.totalMismatch`를 채우고 로그로 경고만 남긴다(`ROADMAP.md` D-05 확정, 2026-08-23). 불일치를 이유로 발행을 차단하거나 `invalid_data` 오류로 승격하지 않는다.
 - 날짜는 `QuoteItem`이 아니라 `Quote.issueDate`/`Quote.validUntil`에 `YYYY-MM-DD` 문자열로 저장되고, 화면 표시는 `displayDate()`(`quote-document.tsx`)가 담당한다. 새로운 날짜 필드를 추가할 때도 동일하게 `YYYY-MM-DD` 문자열 규약과 `Intl.DateTimeFormat("ko-KR", { dateStyle: "long" })` 포맷을 재사용한다.
 
 ## PDF/인쇄 규칙

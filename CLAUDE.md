@@ -15,9 +15,11 @@ npm run start            # 프로덕션 서버 실행
 npm run lint             # ESLint 검사
 npm run format           # Prettier로 전체 파일 포맷팅
 npm run format:check     # Prettier 포맷 검사만 수행
+npm run test             # Vitest 단위/계약 테스트 실행
+npm run test:watch       # Vitest watch 모드
 ```
 
-테스트 프레임워크는 설정되어 있지 않다. 타입 검사만 별도로 하려면 `npx tsc --noEmit`을 사용한다.
+단위/통합 테스트 프레임워크는 Vitest로 확정됐다(`ROADMAP.md` D-17, 2026-08-23). E2E는 Playwright(MCP)를 사용한다. 타입 검사만 별도로 하려면 `npx tsc --noEmit`을 사용한다.
 
 Next.js 16부터 `next dev`/`next build`는 기본적으로 Turbopack을 사용한다(별도 `--turbopack` 플래그 불필요).
 
@@ -30,9 +32,10 @@ npm run lint          # ESLint
 npx tsc --noEmit       # 타입 검사
 npm run build          # 프로덕션 빌드
 npm run format:check   # Prettier 포맷 검사
+npm run test           # Vitest 단위/계약 테스트
 ```
 
-단위·통합·E2E 테스트 도구는 아직 도입되지 않았다(`ROADMAP.md` 단계 1 "출시 전 보완 필요" 항목). 어떤 도구(Vitest/Jest, Playwright 등)를 쓸지는 미확정 상태이며, 별도 지시 없이 임의로 설치하지 않는다.
+E2E 테스트는 Playwright MCP로 수동 검증한다(자동화된 CI 게이트에는 아직 포함되지 않음).
 
 ## 아키텍처
 

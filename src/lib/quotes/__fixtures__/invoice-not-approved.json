@@ -1,0 +1,19 @@
+{
+  "id": "invoice-not-approved-page-id",
+  "created_time": "2026-08-04T00:00:00.000Z",
+  "properties": {
+    "견적서 번호": {
+      "type": "title",
+      "title": [{ "plain_text": "Q-2026-0004" }]
+    },
+    "클라이언트명": {
+      "type": "rich_text",
+      "rich_text": [{ "plain_text": "대기 상태 클라이언트" }]
+    },
+    "발행일": { "type": "date", "date": { "start": "2026-08-04" } },
+    "유효기간": { "type": "date", "date": { "start": "2026-09-04" } },
+    "상태": { "type": "status", "status": { "name": "대기" } },
+    "총 금액": { "type": "number", "number": 1000000 },
+    "항목": { "type": "relation", "relation": [] }
+  }
+}
