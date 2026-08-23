@@ -1,7 +1,6 @@
 export type QuoteItem = {
   id: string;
   name: string;
-  description?: string;
   quantity: number;
   unitPrice: number;
 };
@@ -11,10 +10,8 @@ export type Quote = {
   title: string;
   issueDate: string;
   validUntil: string;
-  provider: string;
   client: string;
   items: QuoteItem[];
-  notes?: string;
 };
 
 export function quoteTotal(quote: Quote) {

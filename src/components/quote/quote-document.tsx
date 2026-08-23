@@ -63,19 +63,11 @@ export function QuoteDocument({ quote }: { quote: Quote }) {
 
       <section
         aria-labelledby="parties"
-        className="grid gap-8 border-b border-border py-8 sm:grid-cols-2"
+        className="border-b border-border py-8"
       >
         <h2 id="parties" className="sr-only">
-          공급자 및 클라이언트 정보
+          클라이언트 정보
         </h2>
-        <div>
-          <p className="mb-2 text-xs font-semibold tracking-widest text-muted-foreground">
-            FROM
-          </p>
-          <p className="whitespace-pre-line leading-7">
-            {quote.provider || "정보 없음"}
-          </p>
-        </div>
         <div>
           <p className="mb-2 text-xs font-semibold tracking-widest text-muted-foreground">
             TO
@@ -106,11 +98,6 @@ export function QuoteDocument({ quote }: { quote: Quote }) {
                   <tr key={item.id} className="border-t border-border">
                     <td className="px-4 py-4">
                       <p className="font-medium">{item.name}</p>
-                      {item.description && (
-                        <p className="mt-1 text-muted-foreground">
-                          {item.description}
-                        </p>
-                      )}
                     </td>
                     <td className="px-4 py-4 text-right tabular-nums">
                       {item.quantity.toLocaleString("ko-KR")}
@@ -147,13 +134,6 @@ export function QuoteDocument({ quote }: { quote: Quote }) {
           부가세 포함 여부는 공급자에게 확인해 주세요.
         </p>
       </section>
-
-      {quote.notes && (
-        <aside className="mt-10 rounded-xl bg-muted/60 p-5 text-sm leading-6 text-muted-foreground">
-          <strong className="mb-1 block text-foreground">안내 사항</strong>
-          {quote.notes}
-        </aside>
-      )}
     </article>
   );
 }
