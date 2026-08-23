@@ -21,6 +21,19 @@ npm run format:check     # Prettier 포맷 검사만 수행
 
 Next.js 16부터 `next dev`/`next build`는 기본적으로 Turbopack을 사용한다(별도 `--turbopack` 플래그 불필요).
 
+### CI 게이트 기준
+
+이 저장소에는 커밋 전 자동 실행되는 pre-commit 훅이나 CI 워크플로가 없다. 코드를 변경한 뒤에는 다음 명령을 수동으로 실행해 통과를 확인한다.
+
+```bash
+npm run lint          # ESLint
+npx tsc --noEmit       # 타입 검사
+npm run build          # 프로덕션 빌드
+npm run format:check   # Prettier 포맷 검사
+```
+
+단위·통합·E2E 테스트 도구는 아직 도입되지 않았다(`ROADMAP.md` 단계 1 "출시 전 보완 필요" 항목). 어떤 도구(Vitest/Jest, Playwright 등)를 쓸지는 미확정 상태이며, 별도 지시 없이 임의로 설치하지 않는다.
+
 ## 아키텍처
 
 ### shadcn/ui 스타일: `base-nova` (Radix 아님)
@@ -41,6 +54,8 @@ Next.js 16부터 `next dev`/`next build`는 기본적으로 Turbopack을 사용�
 4. **Composite Blocks** — `src/components/layout/*`(Container, Header, Footer, MobileNav), `src/components/theme-provider.tsx`, `src/components/theme-toggle.tsx` — Primitives를 조합한 재사용 단위
 5. **Layout Templates** — `src/app/layout.tsx`가 Header/Footer/ThemeProvider/TooltipProvider/Toaster를 조합해 만드는 실제 페이지 셸
 6. **Pages** — `src/app/**/page.tsx`
+
+견적서 도메인(`src/lib/quotes/*`, `src/components/quote/*`)은 이 계층 중 각각 **Foundation 옆의 별도 도메인 로직 레이어**(`src/lib/quotes/*` — Notion 연동·타입·순수 함수)와 **Composite Blocks**(`src/components/quote/*` — `Quote` 타입에만 의존하는 렌더링 컴포넌트)에 해당한다. `src/lib/quotes`는 반드시 `index.ts`를 유일한 진입점으로 import한다. 상세 규칙은 `shrimp-rules.md`를 참조한다.
 
 ### Tailwind CSS v4 (CSS-first, config 파일 없음)
 

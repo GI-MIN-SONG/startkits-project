@@ -21,12 +21,16 @@
 
 ## Notion 연동 규칙 (`src/lib/quotes/notion.ts`)
 
-- Notion 프로퍼티 이름은 한글 리터럴 키(`"상태"`, `"견적서명"`, `"발행일"`, `"유효기간"`, `"공급자 정보"`, `"클라이언트명"`, `"항목"`, `"비고"`)로 하드코딩되어 있다. Notion 데이터베이스 스키마가 바뀌지 않는 한 이 키 이름을 임의로 바꾸지 않는다. 바꿔야 한다면 `docs/PRD.md`의 데이터 사전과 동기화하고 `ROADMAP.md` D-03 항목에 반영한다.
-- `상태` 프로퍼티가 `"발행됨"`이 아니면 `null`을 반환해 404로 처리하는 게이트가 있다(`fetchNotionQuote` 내부). 이 게이트를 우회하거나 조건을 완화하는 변경은 하지 않는다(발행되지 않은 견적서 노출 방지).
-- `항목`(라인 아이템)은 현재 Notion Relation/Sub-DB가 아니라 Rich Text 필드에 저장된 JSON 문자열을 `parseItems()`로 파싱하는 임시 구조다(`ROADMAP.md` 출시 전 보완 필요 항목). Relation 기반으로 전환하는 작업은 별도 단계(`ROADMAP.md` 단계 3)에서만 진행하며, 조용히 동작 방식을 바꾸지 않는다.
-- Notion API 호출에는 항상 `next: { revalidate: 300 }`(5분 재검증)을 유지한다. Next.js 16 캐싱은 opt-in이므로, 캐시 옵션을 제거하거나 무조건 `no-store`로 바꾸지 않는다. 캐시 전략을 바꿔야 하면 `node_modules/next/dist/docs/`의 16.x 캐싱 문서를 먼저 확인한다.
-- `NOTION_API_KEY`는 서버 전용 환경변수다. `NEXT_PUBLIC_` 접두사를 붙이거나 클라이언트 컴포넌트/브라우저로 노출하는 코드를 작성하지 않는다. 새 환경변수를 추가하면 `.env.example`에도 주석과 함께 추가한다.
-- `fetchNotionQuote`가 실패 시 `null`을 반환하는 경우(존재하지 않음/미발행)와 `throw`하는 경우(5xx 등 upstream 오류)를 구분하고 있다. 이 구분을 유지해 `page.tsx`의 `notFound()` 흐름과 `error.tsx`의 오류 경계 흐름이 각각 올바르게 걸리도록 한다.
+- Notion 프로퍼티 이름은 한글 리터럴 키로 하드코딩되어 있으며, 테스트 DB 실측으로 확정된 아래 스키마를 따른다(`ROADMAP.md` D-03/D-04/D-06 확정, 2026-08-22).
+  - `invoices` DB: `"견적서 번호"`(title), `"클라이언트명"`(rich_text), `"발행일"`(date), `"유효기간"`(date), `"상태"`(status: 대기/거절/승인), `"총 금액"`(number), `"항목"`(relation → `items` DB)
+  - `items` DB: `"항목명"`(title), `"수량"`(number), `"단가"`(number), `"금액"`(formula, `수량 * 단가`)
+  - 공급자 정보 프로퍼티는 테스트 DB에 없으므로 매핑하지 않는다(MVP 범위 제외 확정). `Quote` 타입에 `provider` 필드를 다시 추가하지 않는다.
+  - Notion 데이터베이스 스키마가 실제로 바뀌지 않는 한 이 키 이름을 임의로 바꾸지 않는다. 바꿔야 한다면 `docs/PRD.md`의 데이터 사전과 동기화하고 `ROADMAP.md` D-03 항목에 반영한다.
+- `상태` 프로퍼티(status 타입) 값이 `"승인"`이 아니면(`"대기"`/`"거절"` 포함) `null`을 반환해 404로 처리하는 게이트가 있다(`fetchNotionQuote` 내부). 이 게이트를 우회하거나 조건을 완화하는 변경은 하지 않는다(승인되지 않은 견적서 노출 방지). 옛 표현인 `"발행됨"`은 더 이상 사용하지 않는다.
+- `항목`(라인 아이템)은 `invoices`의 `"항목"` relation으로 연결된 `items` DB를 `databases.query`(`filter: { property: "invoices", relation: { contains: <견적서페이지ID> } }`)로 조회해 가져온다. `has_more`/`next_cursor` 기반 페이지네이션으로 전량 수집해야 하며, Rich Text JSON 파싱 방식으로 되돌리지 않는다.
+- Notion API 호출에는 항상 `next: { revalidate: 300 }`(5분 재검증)을 유지한다(items 조회처럼 POST 요청인 경우 `cache: "force-cache"`를 함께 명시해야 opt-in 캐싱된다). Next.js 16 캐싱은 opt-in이므로, 캐시 옵션을 제거하거나 무조건 `no-store`로 바꾸지 않는다. 캐시 전략을 바꿔야 하면 `node_modules/next/dist/docs/`의 16.x 캐싱 문서를 먼저 확인한다.
+- `NOTION_API_KEY`, `NOTION_DATABASE_ID`는 서버 전용 환경변수다. `NEXT_PUBLIC_` 접두사를 붙이거나 클라이언트 컴포넌트/브라우저로 노출하는 코드를 작성하지 않는다. 새 환경변수를 추가하면 `.env.example`에도 주석과 함께 추가한다.
+- `fetchNotionQuote`가 실패 시 `null`을 반환하는 경우(존재하지 않음/미승인)와 `throw`하는 경우(5xx 등 upstream 오류)를 구분하고 있다. 이 구분을 유지해 `page.tsx`의 `notFound()` 흐름과 `error.tsx`의 오류 경계 흐름이 각각 올바르게 걸리도록 한다.
 
 ## 견적서 라우트/URL 규칙
 
@@ -40,8 +44,8 @@
 
 ## 금액/날짜 표시 규칙
 
-- 통화 포맷은 `src/components/quote/quote-document.tsx`의 `Intl.NumberFormat("ko-KR", { style: "currency", currency: "KRW", maximumFractionDigits: 0 })`로 고정되어 있다. 다중 통화 지원은 `ROADMAP.md` D-11(MVP는 KRW만, 제안 상태)에서 다루므로 별도 지시 없이 통화 포맷을 확장하지 않는다.
-- 합계는 Notion의 별도 "합계 금액" 필드를 신뢰하지 않고 `quoteTotal()`(`src/lib/quotes/types.ts`)이 라인 아이템에서 직접 계산한다(`ROADMAP.md` D-05 미정, 서버 검산 도입 전까지 이 방식 유지). Notion 합계 필드를 그대로 읽어와 표시하는 방식으로 바꾸지 않는다.
+- 통화 포맷은 `src/components/quote/quote-document.tsx`의 `Intl.NumberFormat("ko-KR", { style: "currency", currency: "KRW", maximumFractionDigits: 0 })`로 고정되어 있다. 다중 통화 지원은 `ROADMAP.md` D-11(MVP는 KRW만, 확정)에서 다루므로 별도 지시 없이 통화 포맷을 확장하지 않는다.
+- 합계는 Notion의 `"총 금액"` 필드(invoices, 발행자 입력값)를 신뢰하지 않고 `quoteTotal()`(`src/lib/quotes/types.ts`)이 라인 아이템에서 직접 계산한다(`ROADMAP.md` D-05 미정, 서버 검산 도입 전까지 이 방식 유지). `"총 금액"`을 그대로 읽어와 표시하는 방식으로 바꾸거나, 이 둘을 비교 검산하는 로직을 임의로 추가하지 않는다(별도 지시 필요).
 - 날짜는 `QuoteItem`이 아니라 `Quote.issueDate`/`Quote.validUntil`에 `YYYY-MM-DD` 문자열로 저장되고, 화면 표시는 `displayDate()`(`quote-document.tsx`)가 담당한다. 새로운 날짜 필드를 추가할 때도 동일하게 `YYYY-MM-DD` 문자열 규약과 `Intl.DateTimeFormat("ko-KR", { dateStyle: "long" })` 포맷을 재사용한다.
 
 ## PDF/인쇄 규칙
@@ -66,14 +70,14 @@
 
 ## 여러 파일을 함께 수정해야 하는 경우
 
-| 변경 내용 | 함께 확인/수정할 파일 |
-| --- | --- |
-| 새 최상위 라우트 추가 및 메뉴 노출 | `src/app/<route>/page.tsx` 생성 + `src/components/layout/header.tsx`의 `navLinks` |
-| Notion 프로퍼티 매핑 변경 | `src/lib/quotes/notion.ts` + `docs/PRD.md` 데이터 사전 + `ROADMAP.md` D-03/D-04 상태 |
+| 변경 내용                          | 함께 확인/수정할 파일                                                                                                                             |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 새 최상위 라우트 추가 및 메뉴 노출 | `src/app/<route>/page.tsx` 생성 + `src/components/layout/header.tsx`의 `navLinks`                                                                 |
+| Notion 프로퍼티 매핑 변경          | `src/lib/quotes/notion.ts` + `docs/PRD.md` 데이터 사전 + `ROADMAP.md` D-03/D-04 상태                                                              |
 | `Quote`/`QuoteItem` 필드 추가·변경 | `src/lib/quotes/types.ts` + `src/lib/quotes/notion.ts`(매핑) + `src/lib/quotes/demo.ts`(샘플) + `src/components/quote/quote-document.tsx`(렌더링) |
-| 견적서 상태(로딩/404/에러) UX 변경 | `src/app/quote/[id]/loading.tsx` / `not-found.tsx` / `error.tsx` 중 해당 파일만 수정, 서로 역할을 침범하지 않음 |
-| 환경변수 추가 | 실제 사용 코드 + `.env.example` |
-| shadcn primitive 추가 | `npx shadcn@latest add` 실행 후 `components.json`의 `aliases` 규칙에 맞게 import 경로(`@/components/ui/*`) 사용 |
+| 견적서 상태(로딩/404/에러) UX 변경 | `src/app/quote/[id]/loading.tsx` / `not-found.tsx` / `error.tsx` 중 해당 파일만 수정, 서로 역할을 침범하지 않음                                   |
+| 환경변수 추가                      | 실제 사용 코드 + `.env.example`                                                                                                                   |
+| shadcn primitive 추가              | `npx shadcn@latest add` 실행 후 `components.json`의 `aliases` 규칙에 맞게 import 경로(`@/components/ui/*`) 사용                                   |
 
 ## AI 의사결정 기준
 
