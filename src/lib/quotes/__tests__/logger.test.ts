@@ -10,17 +10,15 @@ describe("logQuoteEvent", () => {
   it("allowlist에 있는 필드만 통과시킨다", () => {
     const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-    logQuoteEvent("warn", "quote_total_mismatch", {
-      diff: 100,
-      declaredTotal: 5000,
-      calculatedTotal: 4900,
+    logQuoteEvent("warn", "quote_items_fetch_rate_limited", {
+      status: 429,
+      hasNextCursor: true,
     });
 
     expect(spy).toHaveBeenCalledWith({
-      event: "quote_total_mismatch",
-      diff: 100,
-      declaredTotal: 5000,
-      calculatedTotal: 4900,
+      event: "quote_items_fetch_rate_limited",
+      status: 429,
+      hasNextCursor: true,
     });
   });
 

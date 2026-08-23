@@ -1,6 +1,5 @@
 import "server-only";
 
-import { calculateQuoteTotal, reconcileQuoteTotal } from "./amount";
 import {
   invalidDataError,
   notFoundError,
@@ -184,22 +183,6 @@ export async function fetchNotionQuote(
   const itemsResult = await fetchQuoteItems(apiKey, invoicePageId);
   if (!itemsResult.ok) return itemsResult;
 
-  const items = itemsResult.data;
-  const calculatedTotal = calculateQuoteTotal(items);
-  const declaredTotal = parseNumber(properties["총 금액"]);
-
-  // D-05 확정: 불일치 시 경고만 남기고 발행은 차단하지 않는다.
-  const { matches, diff } = reconcileQuoteTotal(declaredTotal, calculatedTotal);
-  let totalMismatch: Quote["totalMismatch"];
-  if (!matches) {
-    logQuoteEvent("warn", "quote_total_mismatch", {
-      diff,
-      declaredTotal,
-      calculatedTotal,
-    });
-    totalMismatch = { declared: declaredTotal, calculated: calculatedTotal };
-  }
-
   return ok({
     id: invoicePageId,
     title,
@@ -207,7 +190,6 @@ export async function fetchNotionQuote(
       parseDate(properties["발행일"]) || page.created_time?.slice(0, 10) || "",
     validUntil: parseDate(properties["유효기간"]),
     client: parseRichText(properties["클라이언트명"]),
-    items,
-    ...(totalMismatch ? { totalMismatch } : {}),
+    items: itemsResult.data,
   });
 }

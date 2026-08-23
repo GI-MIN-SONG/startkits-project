@@ -11,9 +11,6 @@ type LogLevel = "info" | "warn" | "error";
 const ALLOWED_FIELD_KEYS = new Set([
   "errorKind",
   "status",
-  "diff",
-  "declaredTotal",
-  "calculatedTotal",
   "hasNextCursor",
   "itemCount",
   "durationMs",

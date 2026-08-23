@@ -4,7 +4,6 @@ import {
   calculateLineSubtotal,
   calculateQuoteTotal,
   formatCurrencyKRW,
-  reconcileQuoteTotal,
 } from "../amount";
 import type { QuoteItem } from "../types";
 
@@ -81,25 +80,5 @@ describe("formatCurrencyKRW", () => {
 
   it("0원도 포맷팅한다", () => {
     expect(formatCurrencyKRW(0)).toBe("₩0");
-  });
-});
-
-describe("reconcileQuoteTotal", () => {
-  it("금액이 같으면 matches true, diff 0", () => {
-    expect(reconcileQuoteTotal(1000, 1000)).toEqual({ matches: true, diff: 0 });
-  });
-
-  it("불일치하면 matches false와 diff를 반환한다", () => {
-    expect(reconcileQuoteTotal(1200, 1000)).toEqual({
-      matches: false,
-      diff: 200,
-    });
-  });
-
-  it("declaredTotal이 더 작으면 diff가 음수", () => {
-    expect(reconcileQuoteTotal(800, 1000)).toEqual({
-      matches: false,
-      diff: -200,
-    });
   });
 });

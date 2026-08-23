@@ -49,8 +49,6 @@ describe("fetchNotionQuote (fixture 기반 계약 테스트)", () => {
       "기획 및 설계",
       "프론트엔드 개발",
     ]);
-    // 총 금액(5400000)과 라인 합산(1200000+4200000=5400000)이 일치하므로 경고 없음
-    expect(result.data.totalMismatch).toBeUndefined();
     expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 
@@ -208,7 +206,6 @@ describe("fetchNotionQuote (fixture 기반 계약 테스트)", () => {
     expect(result.data.client).toContain("신사업개발파트");
     expect(result.data.items[0].name).toContain("긴 품목명 테스트용 케이스");
     expect(result.data.items[20].unitPrice).toBe(100000000);
-    expect(result.data.totalMismatch).toBeUndefined();
   });
 
   it("NOTION_API_KEY가 없으면 not_found 오류를 반환한다", async () => {

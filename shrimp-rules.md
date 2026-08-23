@@ -51,7 +51,7 @@
 ## 금액/날짜 표시 규칙
 
 - 통화 포맷은 `src/components/quote/quote-document.tsx`의 `Intl.NumberFormat("ko-KR", { style: "currency", currency: "KRW", maximumFractionDigits: 0 })`로 고정되어 있다. 다중 통화 지원은 `ROADMAP.md` D-11(MVP는 KRW만, 확정)에서 다루므로 별도 지시 없이 통화 포맷을 확장하지 않는다.
-- 화면에 표시하는 합계는 Notion의 `"총 금액"` 필드(invoices, 발행자 입력값)를 그대로 쓰지 않고 `quoteTotal()`(`src/lib/quotes/types.ts`, 내부적으로 `amount.ts`의 `calculateQuoteTotal()`)이 라인 아이템에서 직접 계산한다. `src/lib/quotes/notion.ts`는 `"총 금액"`과 라인 합산을 `reconcileQuoteTotal()`로 비교해 불일치 시 `Quote.totalMismatch`를 채우고 로그로 경고만 남긴다(`ROADMAP.md` D-05 확정, 2026-08-23). 불일치를 이유로 발행을 차단하거나 `invalid_data` 오류로 승격하지 않는다.
+- 화면에 표시하는 합계는 `quoteTotal()`(`src/lib/quotes/types.ts`, 내부적으로 `amount.ts`의 `calculateQuoteTotal()`)이 `items` 라인 아이템에서 직접 계산한 값만 사용한다. Notion `invoices`의 `"총 금액"` 필드는 발행자가 채우지 않는 경우가 많아 **조회·비교·로그 어디에도 사용하지 않는다**(`ROADMAP.md` D-05 2차 확정, 2026-08-23). `"총 금액"`을 다시 읽어와 표시하거나, 라인 합산과 비교하는 검산 로직(`reconcileQuoteTotal` 등)을 임의로 재도입하지 않는다.
 - 날짜는 `QuoteItem`이 아니라 `Quote.issueDate`/`Quote.validUntil`에 `YYYY-MM-DD` 문자열로 저장되고, 화면 표시는 `displayDate()`(`quote-document.tsx`)가 담당한다. 새로운 날짜 필드를 추가할 때도 동일하게 `YYYY-MM-DD` 문자열 규약과 `Intl.DateTimeFormat("ko-KR", { dateStyle: "long" })` 포맷을 재사용한다.
 
 ## PDF/인쇄 규칙

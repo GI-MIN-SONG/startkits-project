@@ -19,19 +19,3 @@ export function calculateQuoteTotal(items: QuoteItem[]): number {
 export function formatCurrencyKRW(amount: number): string {
   return currencyFormatter.format(amount);
 }
-
-export type QuoteTotalReconciliation = {
-  matches: boolean;
-  diff: number;
-};
-
-// D-05 확정: Notion "총 금액"(declaredTotal)과 라인 아이템 합산(calculatedTotal)을
-// 비교해 불일치 여부만 알려준다. 화면 표시값은 calculatedTotal을 계속 사용하며,
-// 이 함수의 결과로 발행을 차단하지 않는다(경고 용도).
-export function reconcileQuoteTotal(
-  declaredTotal: number,
-  calculatedTotal: number
-): QuoteTotalReconciliation {
-  const diff = declaredTotal - calculatedTotal;
-  return { matches: diff === 0, diff };
-}
