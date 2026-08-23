@@ -21,24 +21,25 @@ Invoice Web MVP의 목표는 발행자가 Notion에 견적서를 입력한 뒤 5
 ### 구현됨
 
 - `/quote/[id]` App Router 동적 페이지와 `PageProps<"/quote/[id]">` 사용
-- Server Component에서 Notion 페이지 API 조회
+- Server Component에서 Notion 페이지 API 조회, `invoices`↔`items` Relation 구조로 라인 아이템을 페이지네이션 전량 조회
 - `NOTION_API_KEY` 서버 환경변수 사용 및 API 응답 5분 재검증 설정
-- `발행됨` 상태 필터와 찾을 수 없음, 로딩, 런타임 오류, 빈 항목 상태
-- 견적서명, 발행일, 유효기간, 공급자, 클라이언트, 품목, 수량, 단가, 소계, 합계, 비고 표시
+- `상태`='승인' 필터와 찾을 수 없음, 로딩, 런타임 오류, 빈 항목 상태
+- 견적서 번호, 발행일, 유효기간, 클라이언트, 품목, 수량, 단가, 소계, 합계 표시
 - 모바일 대응 문서 UI, 라이트·다크 테마, `noindex`/`nofollow`
 - `window.print()` 기반 PDF 저장과 A4 인쇄 CSS
 - `/quote/demo` 데모 데이터와 랜딩 페이지
-- 현재 기준 `npm run lint`, `npm run build`, `git diff --check` 통과 이력
+- 오류 5종 분류(`not_found`/`not_published`/`invalid_data`/`upstream_unavailable`/`rate_limited`)와 공통 결과 타입(`QuoteResult`), 민감정보 제거 구조화 로그, Notion 프로퍼티 공통 파서, 금액·날짜·상태·정규화 순수 함수(`src/lib/quotes/*`)
+- Notion `총 금액`과 라인 아이템 합산 불일치 시 경고(`Quote.totalMismatch`)만 남기고 발행은 차단하지 않는 검산 로직
+- Vitest 기반 단위·계약·보안 테스트(8개 파일, 64개 케이스)
+- 현재 기준 `npm run lint`, `npx tsc --noEmit`, `npm run build`, `npm run format:check`, `npm run test` 통과 이력
 
 ### 출시 전 보완 필요
 
-- 현재 `항목`은 Relation/Sub-DB가 아니라 Rich Text 내 JSON 배열로 임시 해석한다.
-- 현재 URL의 `[id]`는 Notion 페이지 ID이며 PRD 권고안인 랜덤 공개 토큰이 아니다.
-- Notion SDK 없이 단일 페이지 API만 호출하며 Relation 페이지 조회, 페이지네이션, 레이트 리밋 재시도가 없다.
-- PRD의 `합계 금액`을 읽어 검산하지 않고 라인 아이템으로 합계를 계산한다.
-- 유효기간 경과 상태를 판정하거나 안내하지 않는다.
-- 자동화된 단위·통합·E2E·접근성·인쇄 회귀 테스트가 없다.
-- 구조화 로그, 오류 수집, 조회/PDF 이벤트, 성공 지표 대시보드가 없다.
+- 현재 URL의 `[id]`는 Notion 페이지 ID이며 PRD 권고안인 랜덤 공개 토큰이 아니다(D-08/D-09 미정).
+- Notion SDK 없이 순수 fetch만 호출하며, 429/5xx는 오류로 분류되지만 자동 재시도(`Retry-After` 존중)는 없다.
+- 유효기간 경과 상태를 판정하는 순수 함수(`isExpired`)는 준비됐지만 UI에는 아직 연결하지 않았다.
+- E2E·접근성·인쇄 회귀 자동화 테스트가 없다(Playwright는 MCP 수동 검증만 사용).
+- 오류 수집, 조회/PDF 이벤트, 성공 지표 대시보드가 없다.
 - 실제 Notion 데이터와 실제 배포 환경에서 검증되지 않았다.
 
 ## 3. 우선순위와 작업 규칙
@@ -105,6 +106,7 @@ Invoice Web MVP의 목표는 발행자가 Notion에 견적서를 입력한 뒤 5
 
 ### 단계 2 — 공통 모듈 (모든 기능에서 쓰는 것들)
 
+**상태:** 완료 (G2 게이트 충족, 2026-08-23)  
 **목표:** API, 공유 링크, 웹뷰와 PDF가 함께 사용하는 데이터 계약과 기반 로직을 한곳에 구축한다.  
 **우선순위:** P0  
 **의존성:** G1 프로젝트 골격
@@ -139,6 +141,14 @@ Invoice Web MVP의 목표는 발행자가 Notion에 견적서를 입력한 뒤 5
 - 단위: 정상값, 빈 값, 0·음수·소수·큰 금액, 비정상 날짜, 중복 항목 ID
 - 계약: Notion 타입별 매핑과 필수 필드 누락
 - 보안: 공통 오류와 로그에 API 키, 토큰, 고객 데이터가 포함되지 않는지 검사
+
+#### 완료 근거 (2026-08-23)
+
+- `src/lib/quotes/errors.ts`(5종 오류 분류+`QuoteResult`), `logger.ts`(allowlist 기반 로그), `parsers.ts`, `amount.ts`(검산 포함), `date.ts`, `status.ts`, `normalize.ts` 구현
+- `notion.ts`가 `throw` 대신 `QuoteResult<Quote>` 반환, 429/5xx 구분 추가
+- fixture 6종(`__fixtures__/`)과 Vitest 단위·계약·보안 테스트 8개 파일 64개 케이스 전부 통과
+- `npm run lint`/`npx tsc --noEmit`/`npm run build`/`npm run format:check`/`npm run test` 및 Playwright MCP로 `/quote/demo` 회귀 없음 확인
+- D-05(합계 검산: 불일치 시 경고), D-17(테스트: Vitest) 확정 반영(8장)
 
 ---
 
