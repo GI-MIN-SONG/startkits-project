@@ -1,0 +1,319 @@
+{
+  "results": [
+    {
+      "id": "item-01",
+      "properties": {
+        "항목명": {
+          "type": "title",
+          "title": [
+            {
+              "plain_text": "브랜드 아이덴티티 리서치 및 경쟁사 분석과 시장 조사 종합 보고서 작성 (긴 품목명 테스트용 케이스)"
+            }
+          ]
+        },
+        "수량": { "type": "number", "number": 1 },
+        "단가": { "type": "number", "number": 15000000 },
+        "금액": {
+          "type": "formula",
+          "formula": { "type": "number", "number": 15000000 }
+        }
+      }
+    },
+    {
+      "id": "item-02",
+      "properties": {
+        "항목명": { "type": "title", "title": [{ "plain_text": "UX 리서치" }] },
+        "수량": { "type": "number", "number": 1 },
+        "단가": { "type": "number", "number": 8000000 },
+        "금액": {
+          "type": "formula",
+          "formula": { "type": "number", "number": 8000000 }
+        }
+      }
+    },
+    {
+      "id": "item-03",
+      "properties": {
+        "항목명": {
+          "type": "title",
+          "title": [{ "plain_text": "정보 구조 설계" }]
+        },
+        "수량": { "type": "number", "number": 1 },
+        "단가": { "type": "number", "number": 9000000 },
+        "금액": {
+          "type": "formula",
+          "formula": { "type": "number", "number": 9000000 }
+        }
+      }
+    },
+    {
+      "id": "item-04",
+      "properties": {
+        "항목명": {
+          "type": "title",
+          "title": [{ "plain_text": "와이어프레임" }]
+        },
+        "수량": { "type": "number", "number": 1 },
+        "단가": { "type": "number", "number": 7000000 },
+        "금액": {
+          "type": "formula",
+          "formula": { "type": "number", "number": 7000000 }
+        }
+      }
+    },
+    {
+      "id": "item-05",
+      "properties": {
+        "항목명": {
+          "type": "title",
+          "title": [{ "plain_text": "UI 디자인 시스템" }]
+        },
+        "수량": { "type": "number", "number": 1 },
+        "단가": { "type": "number", "number": 20000000 },
+        "금액": {
+          "type": "formula",
+          "formula": { "type": "number", "number": 20000000 }
+        }
+      }
+    },
+    {
+      "id": "item-06",
+      "properties": {
+        "항목명": {
+          "type": "title",
+          "title": [{ "plain_text": "데스크톱 화면 디자인" }]
+        },
+        "수량": { "type": "number", "number": 12 },
+        "단가": { "type": "number", "number": 1500000 },
+        "금액": {
+          "type": "formula",
+          "formula": { "type": "number", "number": 18000000 }
+        }
+      }
+    },
+    {
+      "id": "item-07",
+      "properties": {
+        "항목명": {
+          "type": "title",
+          "title": [{ "plain_text": "모바일 화면 디자인" }]
+        },
+        "수량": { "type": "number", "number": 12 },
+        "단가": { "type": "number", "number": 1200000 },
+        "금액": {
+          "type": "formula",
+          "formula": { "type": "number", "number": 14400000 }
+        }
+      }
+    },
+    {
+      "id": "item-08",
+      "properties": {
+        "항목명": {
+          "type": "title",
+          "title": [{ "plain_text": "프론트엔드 아키텍처 설계" }]
+        },
+        "수량": { "type": "number", "number": 1 },
+        "단가": { "type": "number", "number": 12000000 },
+        "금액": {
+          "type": "formula",
+          "formula": { "type": "number", "number": 12000000 }
+        }
+      }
+    },
+    {
+      "id": "item-09",
+      "properties": {
+        "항목명": {
+          "type": "title",
+          "title": [{ "plain_text": "홈페이지 퍼블리싱" }]
+        },
+        "수량": { "type": "number", "number": 1 },
+        "단가": { "type": "number", "number": 6000000 },
+        "금액": {
+          "type": "formula",
+          "formula": { "type": "number", "number": 6000000 }
+        }
+      }
+    },
+    {
+      "id": "item-10",
+      "properties": {
+        "항목명": {
+          "type": "title",
+          "title": [{ "plain_text": "서브페이지 퍼블리싱" }]
+        },
+        "수량": { "type": "number", "number": 20 },
+        "단가": { "type": "number", "number": 800000 },
+        "금액": {
+          "type": "formula",
+          "formula": { "type": "number", "number": 16000000 }
+        }
+      }
+    },
+    {
+      "id": "item-11",
+      "properties": {
+        "항목명": {
+          "type": "title",
+          "title": [{ "plain_text": "API 연동 개발" }]
+        },
+        "수량": { "type": "number", "number": 1 },
+        "단가": { "type": "number", "number": 25000000 },
+        "금액": {
+          "type": "formula",
+          "formula": { "type": "number", "number": 25000000 }
+        }
+      }
+    },
+    {
+      "id": "item-12",
+      "properties": {
+        "항목명": {
+          "type": "title",
+          "title": [{ "plain_text": "관리자 페이지 개발" }]
+        },
+        "수량": { "type": "number", "number": 1 },
+        "단가": { "type": "number", "number": 18000000 },
+        "금액": {
+          "type": "formula",
+          "formula": { "type": "number", "number": 18000000 }
+        }
+      }
+    },
+    {
+      "id": "item-13",
+      "properties": {
+        "항목명": {
+          "type": "title",
+          "title": [{ "plain_text": "결제 시스템 연동" }]
+        },
+        "수량": { "type": "number", "number": 1 },
+        "단가": { "type": "number", "number": 14000000 },
+        "금액": {
+          "type": "formula",
+          "formula": { "type": "number", "number": 14000000 }
+        }
+      }
+    },
+    {
+      "id": "item-14",
+      "properties": {
+        "항목명": {
+          "type": "title",
+          "title": [{ "plain_text": "QA 및 크로스브라우징 테스트" }]
+        },
+        "수량": { "type": "number", "number": 1 },
+        "단가": { "type": "number", "number": 5000000 },
+        "금액": {
+          "type": "formula",
+          "formula": { "type": "number", "number": 5000000 }
+        }
+      }
+    },
+    {
+      "id": "item-15",
+      "properties": {
+        "항목명": {
+          "type": "title",
+          "title": [{ "plain_text": "성능 최적화" }]
+        },
+        "수량": { "type": "number", "number": 1 },
+        "단가": { "type": "number", "number": 6000000 },
+        "금액": {
+          "type": "formula",
+          "formula": { "type": "number", "number": 6000000 }
+        }
+      }
+    },
+    {
+      "id": "item-16",
+      "properties": {
+        "항목명": {
+          "type": "title",
+          "title": [{ "plain_text": "SEO 최적화" }]
+        },
+        "수량": { "type": "number", "number": 1 },
+        "단가": { "type": "number", "number": 4000000 },
+        "금액": {
+          "type": "formula",
+          "formula": { "type": "number", "number": 4000000 }
+        }
+      }
+    },
+    {
+      "id": "item-17",
+      "properties": {
+        "항목명": {
+          "type": "title",
+          "title": [{ "plain_text": "배포 및 인프라 구축" }]
+        },
+        "수량": { "type": "number", "number": 1 },
+        "단가": { "type": "number", "number": 9000000 },
+        "금액": {
+          "type": "formula",
+          "formula": { "type": "number", "number": 9000000 }
+        }
+      }
+    },
+    {
+      "id": "item-18",
+      "properties": {
+        "항목명": {
+          "type": "title",
+          "title": [{ "plain_text": "운영 문서화" }]
+        },
+        "수량": { "type": "number", "number": 1 },
+        "단가": { "type": "number", "number": 3000000 },
+        "금액": {
+          "type": "formula",
+          "formula": { "type": "number", "number": 3000000 }
+        }
+      }
+    },
+    {
+      "id": "item-19",
+      "properties": {
+        "항목명": {
+          "type": "title",
+          "title": [{ "plain_text": "교육 및 인수인계" }]
+        },
+        "수량": { "type": "number", "number": 1 },
+        "단가": { "type": "number", "number": 2500000 },
+        "금액": {
+          "type": "formula",
+          "formula": { "type": "number", "number": 2500000 }
+        }
+      }
+    },
+    {
+      "id": "item-20",
+      "properties": {
+        "항목명": {
+          "type": "title",
+          "title": [{ "plain_text": "3개월 유지보수" }]
+        },
+        "수량": { "type": "number", "number": 3 },
+        "단가": { "type": "number", "number": 3500000 },
+        "금액": {
+          "type": "formula",
+          "formula": { "type": "number", "number": 10500000 }
+        }
+      }
+    },
+    {
+      "id": "item-21",
+      "properties": {
+        "항목명": { "type": "title", "title": [{ "plain_text": "예비비" }] },
+        "수량": { "type": "number", "number": 1 },
+        "단가": { "type": "number", "number": 100000000 },
+        "금액": {
+          "type": "formula",
+          "formula": { "type": "number", "number": 100000000 }
+        }
+      }
+    }
+  ],
+  "has_more": false,
+  "next_cursor": null
+}

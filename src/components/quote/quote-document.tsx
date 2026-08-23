@@ -1,8 +1,9 @@
 import { CalendarDaysIcon, FileTextIcon } from "lucide-react";
 
 import { PrintButton } from "./print-button";
+import { Badge } from "@/components/ui/badge";
 import type { Quote } from "@/lib/quotes";
-import { quoteTotal } from "@/lib/quotes";
+import { isExpired, quoteTotal } from "@/lib/quotes";
 
 const currency = new Intl.NumberFormat("ko-KR", {
   style: "currency",
@@ -18,6 +19,7 @@ function displayDate(value: string) {
 
 export function QuoteDocument({ quote }: { quote: Quote }) {
   const total = quoteTotal(quote);
+  const expired = isExpired(quote.validUntil);
 
   return (
     <article className="quote-sheet mx-auto w-full max-w-5xl bg-card px-5 py-8 text-card-foreground shadow-sm sm:px-10 sm:py-12 lg:px-16">
@@ -31,9 +33,12 @@ export function QuoteDocument({ quote }: { quote: Quote }) {
             <p className="mb-2 text-sm font-medium text-muted-foreground">
               견적서
             </p>
-            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-              {quote.title}
-            </h1>
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+                {quote.title}
+              </h1>
+              {expired && <Badge variant="destructive">유효기간 만료</Badge>}
+            </div>
           </div>
           <PrintButton />
         </div>

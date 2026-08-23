@@ -24,6 +24,7 @@ import {
   type NotionRichTextLike,
   type NotionStatusLike,
 } from "./parsers";
+import { fetchWithRetry } from "./retry";
 import { isPublishable } from "./status";
 import type { Quote, QuoteItem } from "./types";
 
@@ -72,7 +73,7 @@ async function fetchQuoteItems(
   do {
     let response: Response;
     try {
-      response = await fetch(
+      response = await fetchWithRetry(
         `https://api.notion.com/v1/databases/${ITEMS_DATABASE_ID}/query`,
         {
           method: "POST",
@@ -139,13 +140,16 @@ export async function fetchNotionQuote(
 
   let response: Response;
   try {
-    response = await fetch(`https://api.notion.com/v1/pages/${pageId}`, {
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Notion-Version": NOTION_VERSION,
-      },
-      next: { revalidate: 300 },
-    });
+    response = await fetchWithRetry(
+      `https://api.notion.com/v1/pages/${pageId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Notion-Version": NOTION_VERSION,
+        },
+        next: { revalidate: 300 },
+      }
+    );
   } catch (cause) {
     logQuoteEvent("error", "quote_page_fetch_network_error");
     return err(upstreamUnavailableError(undefined, cause));

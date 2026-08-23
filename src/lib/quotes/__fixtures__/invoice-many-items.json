@@ -1,0 +1,23 @@
+{
+  "id": "invoice-many-items-page-id",
+  "created_time": "2026-08-05T00:00:00.000Z",
+  "properties": {
+    "견적서 번호": {
+      "type": "title",
+      "title": [{ "plain_text": "Q-2026-0005" }]
+    },
+    "클라이언트명": {
+      "type": "rich_text",
+      "rich_text": [
+        {
+          "plain_text": "매우 긴 이름을 가진 클라이언트 주식회사 대외협력본부 마케팅전략팀 신사업개발파트 담당자"
+        }
+      ]
+    },
+    "발행일": { "type": "date", "date": { "start": "2026-08-05" } },
+    "유효기간": { "type": "date", "date": { "start": "2026-09-05" } },
+    "상태": { "type": "status", "status": { "name": "승인" } },
+    "총 금액": { "type": "number", "number": 322400000 },
+    "항목": { "type": "relation", "relation": [] }
+  }
+}

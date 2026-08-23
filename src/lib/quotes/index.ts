@@ -1,18 +1,19 @@
 import { demoQuote } from "./demo";
+import { ok, type QuoteResult } from "./errors";
 import { fetchNotionQuote } from "./notion";
 import type { Quote } from "./types";
 
-// fetchNotionQuote는 QuoteResult<Quote>를 반환하지만, 이번 단계에서는
-// page.tsx/quote-document.tsx의 기존 Quote | null 계약을 유지하기 위해
-// 여기서 어댑터 역할로 언랩한다. 세분화된 오류(QuoteErrorKind)를 라우트가
-// 직접 분기하는 것은 단계 3 범위다.
-export async function getQuote(id: string): Promise<Quote | null> {
-  if (id === "demo") return demoQuote;
+// 단계 3: 라우트(page.tsx)가 QuoteErrorKind별로 직접 분기할 수 있도록
+// QuoteResult<Quote>를 그대로 반환한다. Quote | null로 언랩하지 않는다.
+export async function getQuoteResult(id: string): Promise<QuoteResult<Quote>> {
+  if (id === "demo") return ok(demoQuote);
 
-  const result = await fetchNotionQuote(id);
-  return result.ok ? result.data : null;
+  return fetchNotionQuote(id);
 }
 
 export type { Quote, QuoteItem } from "./types";
 export { quoteTotal } from "./types";
 export type { QuoteError, QuoteErrorKind, QuoteResult } from "./errors";
+export { resolveErrorCopy } from "./error-copy";
+export type { QuoteErrorCopy } from "./error-copy";
+export { isExpired } from "./date";

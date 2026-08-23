@@ -12,10 +12,15 @@
 
 - `src/app/quote/[id]/` — 견적서 상세 페이지 라우트. `page.tsx`(서버 컴포넌트, Notion 조회), `loading.tsx`, `not-found.tsx`, `error.tsx`로 구성된 Next.js 파일 컨벤션을 그대로 따른다. 이 네 파일은 세트로 취급하고, 상태 처리(로딩/404/에러) 로직을 추가할 때 App Router 컨벤션 파일 대신 페이지 내부에서 직접 분기하지 않는다.
 - `src/lib/quotes/` — 견적서 도메인 로직 전용 디렉터리.
-  - `types.ts` — `Quote`, `QuoteItem` 타입과 `quoteTotal()` 순수 함수.
-  - `notion.ts` — Notion API 호출(`fetchNotionQuote`). 파일 최상단에 `import "server-only"`가 있으므로 클라이언트 컴포넌트에서 import 금지.
+  - `types.ts` — `Quote`, `QuoteItem` 타입과 `quoteTotal()` 순수 함수(내부적으로 `amount.ts`의 `calculateQuoteTotal` 호출).
+  - `errors.ts` — `QuoteErrorKind` 5종(`not_found`/`not_published`/`invalid_data`/`upstream_unavailable`/`rate_limited`)과 `QuoteResult<T>`. 서버 전용 코드가 아니므로 클라이언트 컴포넌트에서 직접 import해도 안전하다.
+  - `error-copy.ts` — `QuoteErrorKind`별 화면 문구를 매핑하는 `resolveErrorCopy()`. 서버 전용 코드 아님.
+  - `notion.ts` — Notion API 호출(`fetchNotionQuote`, `QuoteResult<Quote>` 반환). `retry.ts`를 통해 429/일시적 5xx에 `Retry-After` 존중 재시도를 적용한다. 파일 최상단에 `import "server-only"`가 있으므로 클라이언트 컴포넌트에서 import 금지.
+  - `retry.ts` — `fetchWithRetry()`. `server-only` 모듈이므로 클라이언트 컴포넌트에서 import 금지.
+  - `logger.ts` — 민감정보 제거 구조화 로그. `server-only` 모듈이므로 클라이언트 컴포넌트에서 import 금지.
   - `demo.ts` — `/quote/demo`용 하드코딩된 샘플 데이터(`demoQuote`).
-  - `index.ts` — 외부에 노출하는 유일한 진입점(`getQuote`, 타입 re-export). **다른 파일에서 `src/lib/quotes/notion` 또는 `src/lib/quotes/demo`를 직접 import하지 말고 반드시 `@/lib/quotes`(index.ts)를 통해서만 import한다.**
+  - `index.ts` — 외부에 노출하는 유일한 진입점(`getQuoteResult`, 타입/함수 re-export). **다른 파일에서 `src/lib/quotes/notion`/`demo`/`retry`/`logger`를 직접 import하지 말고 반드시 `@/lib/quotes`(index.ts)를 통해서만 import한다.**
+    - **예외**: `src/app/quote/[id]/error.tsx`는 클라이언트 컴포넌트(`"use client"`)라서 `@/lib/quotes`(index.ts)를 그대로 import하면 `notion.ts`/`logger.ts`/`retry.ts` 등 `server-only` 모듈까지 클라이언트 번들 경로에 딸려 들어가 빌드 오류가 난다. 이 파일만 예외적으로 `@/lib/quotes/error-copy`, `@/lib/quotes/errors`처럼 서버 전용 코드가 없는 개별 파일을 직접 import한다. 새로운 클라이언트 컴포넌트가 `QuoteError`/`resolveErrorCopy`류의 순수 코드가 필요하면 같은 패턴을 따르고, `index.ts`를 거치지 않는다.
 - `src/components/quote/` — 견적서 렌더링 전용 컴포넌트(`quote-document.tsx` 서버 컴포넌트, `print-button.tsx` 클라이언트 컴포넌트). 이 디렉터리의 컴포넌트는 `Quote` 타입에만 의존하고 Notion 관련 타입(`NotionPage` 등)을 직접 참조하지 않는다.
 - `src/components/layout/`, `src/components/ui/`, `src/components/theme-*` — 스타터킷 공통 레이어. CLAUDE.md에 정의된 계층(Foundation → Primitives → Overlays → Composite Blocks → Layout Templates → Pages)을 유지한다.
 
@@ -30,12 +35,13 @@
 - `항목`(라인 아이템)은 `invoices`의 `"항목"` relation으로 연결된 `items` DB를 `databases.query`(`filter: { property: "invoices", relation: { contains: <견적서페이지ID> } }`)로 조회해 가져온다. `has_more`/`next_cursor` 기반 페이지네이션으로 전량 수집해야 하며, Rich Text JSON 파싱 방식으로 되돌리지 않는다.
 - Notion API 호출에는 항상 `next: { revalidate: 300 }`(5분 재검증)을 유지한다(items 조회처럼 POST 요청인 경우 `cache: "force-cache"`를 함께 명시해야 opt-in 캐싱된다). Next.js 16 캐싱은 opt-in이므로, 캐시 옵션을 제거하거나 무조건 `no-store`로 바꾸지 않는다. 캐시 전략을 바꿔야 하면 `node_modules/next/dist/docs/`의 16.x 캐싱 문서를 먼저 확인한다.
 - `NOTION_API_KEY`, `NOTION_DATABASE_ID`는 서버 전용 환경변수다. `NEXT_PUBLIC_` 접두사를 붙이거나 클라이언트 컴포넌트/브라우저로 노출하는 코드를 작성하지 않는다. 새 환경변수를 추가하면 `.env.example`에도 주석과 함께 추가한다.
-- `fetchNotionQuote`는 `throw`하지 않고 `QuoteResult<Quote>`(`src/lib/quotes/errors.ts`)를 반환한다. 실패는 `not_found`/`not_published`/`invalid_data`/`upstream_unavailable`/`rate_limited` 5종으로 분류된다. `src/lib/quotes/index.ts`의 `getQuote()`가 이를 기존 `Quote | null` 계약으로 언랩하는 어댑터 역할을 하므로, `page.tsx`의 `notFound()` 흐름은 그대로 유지된다. 세분화된 오류 코드를 라우트가 직접 분기하는 것은 단계 3 범위이며, 이번 단계에서 `page.tsx`/`error.tsx`를 임의로 바꾸지 않는다.
+- `fetchNotionQuote`는 `throw`하지 않고 `QuoteResult<Quote>`(`src/lib/quotes/errors.ts`)를 반환한다. 실패는 `not_found`/`not_published`/`invalid_data`/`upstream_unavailable`/`rate_limited` 5종으로 분류된다. `src/lib/quotes/index.ts`의 `getQuoteResult()`가 이 결과를 그대로 노출하며(단계 3에서 `Quote | null` 어댑터를 걷어냄), `page.tsx`가 `not_found`/`not_published`는 `notFound()`로, 나머지 3종은 `error.tsx`로 위임하도록 직접 분기한다(2026-08-23, ROADMAP D-08/D-09 확정 여부와 무관하게 진행 가능했던 작업).
+- 429/일시적 5xx(502/503/504)는 `src/lib/quotes/retry.ts`의 `fetchWithRetry()`가 `Retry-After` 헤더(또는 기본 백오프)를 존중해 재시도한다. 500은 재시도 없이 즉시 `upstream_unavailable`로 처리한다. 총 대기 시간 상한(5초)이 있으므로, 이 상한을 임의로 늘려 서버 컴포넌트 렌더링을 과도하게 지연시키지 않는다.
 
 ## 견적서 라우트/URL 규칙
 
-- 현재 `/quote/[id]`의 `id`는 Notion 페이지 ID를 그대로 사용한다(PRD 권고안인 공개 토큰이 아직 아님, `ROADMAP.md` D-08/D-09 미정 상태). 이 사실을 알고 있는 상태에서, 토큰화 작업을 지시받지 않은 이상 URL에 Notion ID를 그대로 노출하는 현재 구조를 "보안 이슈"로 임의 리팩터링하지 않는다 — 별도 작업 지시가 있을 때만 진행한다.
-- 데모 라우팅은 `id === "demo"` 문자열 분기로 `getQuote()`(`src/lib/quotes/index.ts`) 안에 하드코딩되어 있다. 데모 경로를 변경/추가할 때는 이 분기와 `src/lib/quotes/demo.ts`를 함께 수정한다.
+- 현재 `/quote/[id]`의 `id`는 Notion 페이지 ID를 그대로 사용한다(PRD 권고안인 공개 토큰이 아직 아님, `ROADMAP.md` D-08/D-09 미정 상태). **2026-08-23 사용자 확인**: 지금은 로그인 없는 데모/예시 데이터 조회 수준으로 충분하다고 판단해 랜덤 토큰 발급 시스템 구현을 명시적으로 보류했다(단계 3 범위 재조정, `ROADMAP.md` 참고). 이 사실을 알고 있는 상태에서, 토큰화 작업을 다시 지시받지 않은 이상 URL에 Notion ID를 그대로 노출하는 현재 구조를 "보안 이슈"로 임의 리팩터링하지 않는다 — 별도 작업 지시가 있을 때만 진행한다.
+- 데모 라우팅은 `id === "demo"` 문자열 분기로 `getQuoteResult()`(`src/lib/quotes/index.ts`) 안에 하드코딩되어 있다. 데모 경로를 변경/추가할 때는 이 분기와 `src/lib/quotes/demo.ts`를 함께 수정한다.
 - `/quote/[id]/page.tsx`의 `metadata`에는 `robots: { index: false, follow: false }`가 고정되어 있다. 견적서는 비공개 문서이므로 이 설정을 제거하거나 완화하지 않는다.
 
 ## 헤더 내비게이션 동기화
@@ -87,9 +93,9 @@
 
 ## 금지 사항
 
-- `src/lib/quotes/notion.ts`, `src/lib/quotes/demo.ts`를 `@/lib/quotes/index`(즉 `@/lib/quotes`)를 거치지 않고 다른 모듈에서 직접 import하지 않는다.
+- `src/lib/quotes/notion.ts`, `src/lib/quotes/demo.ts`, `retry.ts`, `logger.ts`를 `@/lib/quotes/index`(즉 `@/lib/quotes`)를 거치지 않고 다른 모듈에서 직접 import하지 않는다(`error.tsx`의 `error-copy`/`errors` 직접 import 예외는 위 "디렉터리 구조 및 책임" 참고).
 - `NOTION_API_KEY`를 로그, 클라이언트 코드, 에러 메시지, 커밋에 노출하지 않는다.
-- `상태 !== "발행됨"` 게이트를 삭제/완화해 미발행 견적서를 노출시키지 않는다.
+- `isPublishable(status) === "승인"` 게이트를 삭제/완화해 미승인 견적서를 노출시키지 않는다.
 - `/quote/[id]`의 `robots` 메타데이터를 인덱싱 허용으로 바꾸지 않는다.
 - `src/components/ui/*` 파일을 shadcn CLI 없이 대규모로 새로 작성하지 않는다.
 - Radix UI 전용 API(`asChild` 등)를 이 프로젝트의 `base-nova`(Base UI) 컴포넌트에 그대로 적용하지 않는다.

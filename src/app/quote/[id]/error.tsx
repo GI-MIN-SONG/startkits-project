@@ -1,20 +1,33 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { resolveErrorCopy } from "@/lib/quotes/error-copy";
+import type { QuoteError } from "@/lib/quotes/errors";
 
 export default function QuoteError({
+  error,
   reset,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const cause = error.cause as QuoteError | undefined;
+  const copy = resolveErrorCopy(cause?.kind);
+
   return (
     <section className="flex min-h-[65vh] flex-col items-center justify-center px-6 text-center">
-      <h1 className="text-2xl font-semibold">견적서를 불러오지 못했습니다</h1>
-      <p className="mt-3 text-muted-foreground">잠시 후 다시 시도해 주세요.</p>
-      <Button className="mt-7" onClick={reset}>
-        다시 시도
-      </Button>
+      <h1 className="text-2xl font-semibold">{copy.title}</h1>
+      <p className="mt-3 text-muted-foreground">{copy.description}</p>
+      {copy.showRetry && (
+        <Button className="mt-7" onClick={reset}>
+          다시 시도
+        </Button>
+      )}
+      {error.digest && (
+        <p className="mt-6 text-xs text-muted-foreground/70">
+          오류 코드: {error.digest}
+        </p>
+      )}
     </section>
   );
 }
