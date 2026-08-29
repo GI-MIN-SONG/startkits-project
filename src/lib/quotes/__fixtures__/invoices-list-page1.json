@@ -1,0 +1,40 @@
+{
+  "results": [
+    {
+      "id": "invoice-list-page-1",
+      "created_time": "2026-08-20T00:00:00.000Z",
+      "properties": {
+        "견적서 번호": {
+          "type": "title",
+          "title": [{ "plain_text": "Q-2026-0003" }]
+        },
+        "클라이언트명": {
+          "type": "rich_text",
+          "rich_text": [{ "plain_text": "다인 클라이언트 주식회사" }]
+        },
+        "발행일": { "type": "date", "date": { "start": "2026-08-20" } },
+        "유효기간": { "type": "date", "date": { "start": "2026-09-19" } },
+        "상태": { "type": "status", "status": { "name": "승인" } }
+      }
+    },
+    {
+      "id": "invoice-list-page-2",
+      "created_time": "2026-08-15T00:00:00.000Z",
+      "properties": {
+        "견적서 번호": {
+          "type": "title",
+          "title": [{ "plain_text": "Q-2026-0002" }]
+        },
+        "클라이언트명": {
+          "type": "rich_text",
+          "rich_text": [{ "plain_text": "가상 클라이언트 주식회사" }]
+        },
+        "발행일": { "type": "date", "date": { "start": "2026-08-15" } },
+        "유효기간": { "type": "date", "date": { "start": "2026-09-14" } },
+        "상태": { "type": "status", "status": { "name": "대기" } }
+      }
+    }
+  ],
+  "has_more": true,
+  "next_cursor": "cursor-page-2"
+}

@@ -37,6 +37,16 @@ export function isValidQuoteItem(value: unknown): value is QuoteItem {
   return isQuoteItem(value);
 }
 
+// 관리자 목록 조회 전용 타입. 상세용 Quote와 달리 라인 아이템을 조회하지 않으므로
+// items 필드를 두지 않는다(items:[]로 인한 합계 0원 오표시 방지, D-V1 로드맵 4장 참조).
+export type QuoteListItem = {
+  id: string;
+  title: string;
+  client: string;
+  issueDate: string;
+  status: string;
+};
+
 export function isValidQuote(value: unknown): value is Quote {
   if (!value || typeof value !== "object") return false;
   const quote = value as Record<string, unknown>;

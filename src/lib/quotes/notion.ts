@@ -25,7 +25,7 @@ import {
 } from "./parsers";
 import { fetchWithRetry } from "./retry";
 import { isPublishable } from "./status";
-import type { Quote, QuoteItem } from "./types";
+import type { Quote, QuoteItem, QuoteListItem } from "./types";
 
 const NOTION_VERSION = "2022-06-28";
 const ITEMS_DATABASE_ID = "3c4eca35-ed7a-8019-b995-c4dbe8460fb0";
@@ -192,4 +192,92 @@ export async function fetchNotionQuote(
     client: parseRichText(properties["클라이언트명"]),
     items: itemsResult.data,
   });
+}
+
+// invoices DB 전체를 목록으로 조회한다. 상세 조회(fetchNotionQuote)와 달리
+// 상태='승인' 게이트를 적용하지 않고(발행자는 대기·거절 건도 봐야 함), 라인 아이템도 조회하지 않는다.
+export async function fetchNotionQuoteList(): Promise<
+  QuoteResult<QuoteListItem[]>
+> {
+  const apiKey = process.env.NOTION_API_KEY;
+  if (!apiKey) return err(notFoundError());
+
+  const databaseId = process.env.NOTION_DATABASE_ID;
+  if (!databaseId) {
+    logQuoteEvent("error", "quote_list_missing_database_id");
+    return err(invalidDataError("견적서 목록 조회 설정이 올바르지 않습니다."));
+  }
+
+  const results: QuoteListItem[] = [];
+  let cursor: string | undefined;
+
+  do {
+    let response: Response;
+    try {
+      response = await fetchWithRetry(
+        `https://api.notion.com/v1/databases/${databaseId}/query`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            "Notion-Version": NOTION_VERSION,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            // D-V1-02 확정: 발행일 내림차순(최신 우선).
+            sorts: [{ property: "발행일", direction: "descending" }],
+            page_size: 100,
+            ...(cursor ? { start_cursor: cursor } : {}),
+          }),
+          cache: "force-cache",
+          next: { revalidate: 300 },
+        }
+      );
+    } catch (cause) {
+      logQuoteEvent("error", "quote_list_fetch_network_error");
+      return err(upstreamUnavailableError(undefined, cause));
+    }
+
+    if (response.status === 404) return err(notFoundError());
+    if (response.status === 429) {
+      logQuoteEvent("warn", "quote_list_fetch_rate_limited", {
+        status: response.status,
+      });
+      return err(rateLimitedError());
+    }
+    if (!response.ok) {
+      logQuoteEvent("error", "quote_list_fetch_failed", {
+        status: response.status,
+      });
+      return err(upstreamUnavailableError());
+    }
+
+    const page = (await response.json()) as NotionListResponse<InvoicePage>;
+
+    for (const row of page.results) {
+      if (!row.id) continue;
+
+      const properties = row.properties ?? {};
+      const title = parseTitle(properties["견적서 번호"]);
+      if (!title) continue;
+
+      results.push({
+        id: row.id,
+        title,
+        client: parseRichText(properties["클라이언트명"]),
+        issueDate:
+          parseDate(properties["발행일"]) ||
+          row.created_time?.slice(0, 10) ||
+          "",
+        status: parseStatusOption(properties["상태"]),
+      });
+    }
+
+    cursor = page.has_more ? (page.next_cursor ?? undefined) : undefined;
+  } while (cursor);
+
+  logQuoteEvent("info", "quote_list_fetch_success", {
+    itemCount: results.length,
+  });
+  return ok(results);
 }
